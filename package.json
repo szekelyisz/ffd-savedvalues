@@ -1,0 +1,50 @@
+{
+  "name": "@fairfooddata/savedvalues",
+  "version": "0.1.0",
+  "description": "Fair Food Data - Saved Values",
+  "productName": "Fair Food Data - Saved Values",
+  "author": "Szabolcs Szekelyi <szabi@aura-labs.cc>",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "quasar dev",
+    "build": "quasar build"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.16.4",
+    "@vueuse/core": "^10.11.0",
+    "axios": "^1.2.1",
+    "chart.js": "^4.4.3",
+    "dotenv": "^16.4.5",
+    "pinia": "^2.0.11",
+    "quasar": "^2.16.0",
+    "query-string": "^9.0.0",
+    "vue": "^3.4.18",
+    "vue-chartjs": "^5.3.1",
+    "vue-router": "^4.0.12"
+  },
+  "devDependencies": {
+    "@fairfooddata/types": "^0.0.4",
+    "@quasar/app-vite": "^1.9.0",
+    "@types/node": "^12.20.21",
+    "@types/query-string": "^6.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
+    "autoprefixer": "^10.4.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^9.0.0",
+    "prettier": "^2.5.1",
+    "typescript": "^4.5.4",
+    "vite-plugin-checker": "^0.6.4",
+    "vue-tsc": "^1.8.22"
+  },
+  "engines": {
+    "node": "^20 || ^18 || ^16",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}
