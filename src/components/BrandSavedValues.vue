@@ -1,75 +1,132 @@
 <template>
-  <div v-if="listRequest.isFetching.value" class="fixed-center">
-    <div class="column content-center items-center">
-      <q-spinner size="4em" />
-      <div class="q-py-md">Fetching NFTs</div>
-    </div>
-  </div>
-  <div v-else-if="listRequest.error.value !== null" class="fixed-center">
+  <div v-if="listRequest.error.value !== undefined" class="fixed-center">
     <div class="column content-center items-center">
       <q-icon name="error" size="4em" />
       <div class="q-py-md">Error: {{ listRequest.error }}</div>
     </div>
   </div>
-  <div v-else-if="listRequest.isFinished">
+  <div else>
     <div class="row justify-center">
       <BrandFacilityFilter />
       <DateRangeFilter />
     </div>
     <InputOutputWeightChart />
   </div>
+  <q-page-sticky v-if="progressText !== undefined" :offset="[16, 16]">
+    <q-card>
+      <q-circular-progress
+        indeterminate
+        color="primary"
+        size="4em"
+        class="q-ma-md"
+        style="position: relative; opacity: 0.5"
+      />
+      <q-circular-progress
+        style="position: absolute; left: 0; top: 0"
+        show-value
+        font-size="12px"
+        size="4em"
+        color="primary"
+        class="q-ma-md"
+        :min="0"
+        :value="nCompletedMetadataRequests"
+        :max="listRequest.data.value?.metadataUpdateds.length"
+        >{{ progressText }}</q-circular-progress
+      >
+    </q-card>
+  </q-page-sticky>
 </template>
 
 <script setup lang="ts">
 import { Pokedex } from '@fairfooddata/types';
-import { useFetch } from '@vueuse/core';
 import { useNftStore } from 'src/stores/nft';
-// import { computed } from 'vue';
 import DateRangeFilter from 'src/components/DateRangeFilter.vue';
 import InputOutputWeightChart from './InputOutputWeightChart.vue';
 import BrandFacilityFilter from './BrandFacilityFilter.vue';
+import {
+  Client,
+  provideClient,
+  cacheExchange,
+  fetchExchange,
+  useQuery,
+  gql,
+} from '@urql/vue';
+import { Bee, Data, FileData } from '@ethersphere/bee-js';
+import { computed, ref, Ref } from 'vue';
+import { useAsyncState, UseAsyncStateReturn } from '@vueuse/core';
 
-type TokenHistory = {
+type MetadataUpdated = {
+  // id: string;
   tokenId: string;
-  hashes: string[];
-}[];
-
-type MetadataResponse = {
-  swarnReference: string;
-  content: Pokedex;
+  // owner: string;
+  swarmHash: string;
+  // blockNumber: string;
+  // blockTimestamp: string;
+  // transactionHash: string;
 };
 
-const props = defineProps<{ brand: string | undefined }>();
+const client = new Client({
+  url: process.env.GQL_URL,
+  exchanges: [cacheExchange, fetchExchange],
+});
 
-const listRequest = useFetch<TokenHistory>(
-  `${process.env.BACKEND_URL}/list${
-    props.brand
-      ? `?filter=${encodeURIComponent(
-          `instance.ownerId="${props.brand.replaceAll('"', '\\"')}"`
-        )}`
-      : ''
-  }`
-).json();
+provideClient(client);
 
-listRequest.then((response) => {
-  if (response.data.value === null) return;
+const listRequest = useQuery<{ metadataUpdateds: MetadataUpdated[] }>({
+  query: gql`
+    {
+      metadataUpdateds {
+        tokenId
+        swarmHash
+      }
+    }
+  `,
+});
 
-  for (const history of response.data.value) {
-    const metadataRequest = useFetch<MetadataResponse>(
-      `${process.env.BACKEND_URL}/metadata/${history.tokenId}`
-    ).json<MetadataResponse>();
-    metadataRequest.then((response) =>
-      response.data.value !== null
-        ? useNftStore().nfts.push(response.data.value.content)
-        : null
+listRequest.then(async (response) => {
+  if (response.data.value === undefined) return;
+
+  metadataRequests.value.splice(0);
+  useNftStore().nfts.splice(0);
+
+  for (const event of response.data.value.metadataUpdateds) {
+    const metadataRequest = new Bee(process.env.SWARM_API_URL).downloadFile(
+      BigInt(event.swarmHash).toString(16).padStart(64, '0'),
+      undefined,
+      { timeout: false }
     );
-    metadataRequests.push(metadataRequest);
+
+    metadataRequest
+      .then((response) => {
+        try {
+          useNftStore().nfts.push(response.data.json() as unknown as Pokedex);
+        } catch {
+          console.warn('Invalid metadata syntax');
+          return;
+        }
+      })
+      .catch((error) => console.warn(error));
+    metadataRequests.value.push(useAsyncState(metadataRequest, undefined));
   }
 });
 
-const metadataRequests: ReturnType<typeof useFetch>[] = [];
+const metadataRequests: Ref<
+  UseAsyncStateReturn<FileData<Data> | undefined, [], true>[]
+> = ref([]);
 
-// const nPendingMetadataRequests = computed(() =>
-//   metadataRequests.reduce((prev, cur) => prev + (cur.isFinished ? 0 : 1), 0)
-// );
+const nCompletedMetadataRequests = computed(() =>
+  metadataRequests.value.reduce(
+    (prev, cur) => prev + (cur.isLoading ? 0 : 1),
+    0
+  )
+);
+
+const progressText = computed(() =>
+  listRequest.data.value === undefined
+    ? ''
+    : nCompletedMetadataRequests.value ===
+      listRequest.data.value.metadataUpdateds.length
+    ? undefined
+    : `${nCompletedMetadataRequests.value}/${listRequest.data.value.metadataUpdateds.length}`
+);
 </script>

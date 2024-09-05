@@ -13,11 +13,14 @@
     "build": "quasar build"
   },
   "dependencies": {
+    "@ethersphere/bee-js": "^7.1.1",
     "@quasar/extras": "^1.16.4",
+    "@urql/vue": "^1.4.1",
     "@vueuse/core": "^10.11.0",
     "axios": "^1.2.1",
     "chart.js": "^4.4.3",
     "dotenv": "^16.4.5",
+    "graphql": "^16.9.0",
     "pinia": "^2.0.11",
     "quasar": "^2.16.0",
     "query-string": "^9.0.0",
@@ -39,6 +42,7 @@
     "prettier": "^2.5.1",
     "typescript": "^4.5.4",
     "vite-plugin-checker": "^0.6.4",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vue-tsc": "^1.8.22"
   },
   "engines": {

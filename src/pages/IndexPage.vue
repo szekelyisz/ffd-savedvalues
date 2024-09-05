@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    <BrandSavedValues :brand="brand" />
+    <BrandSavedValues />
   </q-page>
 </template>
 
@@ -11,11 +11,10 @@ defineOptions({
 
 import qs from 'query-string';
 import BrandSavedValues from 'src/components/BrandSavedValues.vue';
-import { computed } from 'vue';
+import { useChartFiltersStore } from 'src/stores/chartFilters';
 
-const brand = computed((): string | undefined => {
-  const args = qs.parse(qs.extract(window.location.href));
+const args = qs.parse(qs.extract(window.location.href));
 
-  return typeof args['brand'] === 'string' ? args['brand'] : undefined;
-});
+useChartFiltersStore().brand =
+  typeof args['brand'] === 'string' ? args['brand'] : null;
 </script>

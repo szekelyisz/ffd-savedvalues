@@ -82,6 +82,7 @@ module.exports = configure(function (ctx) {
           },
           { server: false },
         ],
+        [require('vite-plugin-node-polyfills').nodePolyfills],
       ],
     },
 
