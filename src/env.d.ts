@@ -7,5 +7,6 @@ declare namespace NodeJS {
     VUE_ROUTER_BASE: string | undefined;
     GQL_URL: string;
     SWARM_API_URL: string;
+    PACKAGE_PAGE_URL: string;
   }
 }

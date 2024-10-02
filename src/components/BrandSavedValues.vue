@@ -11,6 +11,7 @@
       <DateRangeFilter />
     </div>
     <InputOutputWeightChart />
+    <ProcessTable />
   </div>
   <q-page-sticky v-if="progressText !== undefined" :offset="[16, 16]">
     <q-card>
@@ -43,6 +44,8 @@ import { useNftStore } from 'src/stores/nft';
 import DateRangeFilter from 'src/components/DateRangeFilter.vue';
 import InputOutputWeightChart from './InputOutputWeightChart.vue';
 import BrandFacilityFilter from './BrandFacilityFilter.vue';
+import ProcessTable from './ProcessTable.vue';
+
 import {
   Client,
   provideClient,
