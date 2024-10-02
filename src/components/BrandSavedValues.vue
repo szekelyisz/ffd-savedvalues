@@ -99,7 +99,10 @@ listRequest.then(async (response) => {
     metadataRequest
       .then((response) => {
         try {
-          useNftStore().nfts.push(response.data.json() as unknown as Pokedex);
+          useNftStore().nfts.push({
+            id: event.tokenId,
+            metadata: response.data.json() as unknown as Pokedex,
+          });
         } catch {
           console.warn('Invalid metadata syntax');
           return;

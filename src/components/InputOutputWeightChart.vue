@@ -23,7 +23,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { computed } from 'vue';
-import { FoodInstance, Location } from '@fairfooddata/types';
+import { FoodInstance, ProductInstance } from '@fairfooddata/types';
 import { useChartFiltersStore } from 'src/stores/chartFilters';
 import { Line } from 'vue-chartjs';
 import { useNftStore } from 'src/stores/nft';
@@ -56,37 +56,17 @@ const chartOptions: ChartOptions<'line'> = {
   },
 };
 
-function coincident(a: Location | null, b: Location | null) {
-  return (
-    a !== null &&
-    b !== null &&
-    a.coordinates[0] === b.coordinates[0] &&
-    a.coordinates[1] === b.coordinates[1]
-  );
-}
+// function coincident(a: Location | null, b: Location | null) {
+//   return (
+//     a !== null &&
+//     b !== null &&
+//     a.coordinates[0] === b.coordinates[0] &&
+//     a.coordinates[1] === b.coordinates[1]
+//   );
+// }
 
 const startDate = computed(() => useChartFiltersStore().startDate);
 const endDate = computed(() => useChartFiltersStore().endDate);
-const nfts = computed(() => useNftStore().nfts);
-
-const filteredNfts = computed(() =>
-  nfts.value
-    .map((pokedex) => pokedex.instance)
-    .filter(
-      (instance): instance is FoodInstance =>
-        'process' in instance &&
-        instance.process !== undefined &&
-        instance.process.timestamp >= startDate.value &&
-        instance.process.timestamp <= endDate.value &&
-        (useChartFiltersStore().facilityLocation === null ||
-          coincident(
-            instance.process.facility.location,
-            useChartFiltersStore().facilityLocation
-          )) &&
-        (useChartFiltersStore().brand === null ||
-          instance.ownerId === useChartFiltersStore().brand)
-    )
-);
 
 const nftsByDate = computed(() => {
   const oneDay = 24 * 60 * 60;
@@ -95,14 +75,23 @@ const nftsByDate = computed(() => {
 
   for (let date = startDate.value; date <= endDate.value; date += oneDay) {
     nftsByDate.push(
-      filteredNfts.value.filter(
-        (instance) =>
-          instance.process &&
-          instance.process.timestamp >= date &&
-          instance.process.timestamp < date + oneDay
-      )
+      useNftStore()
+        .filteredTokens.map<ProductInstance>(
+          ({ metadata: { instance } }) => instance
+        )
+        .filter(
+          (instance): instance is FoodInstance => instance?.category === 'food'
+        )
+        .filter(
+          (instance) =>
+            'process' in instance &&
+            instance.process &&
+            instance.process.timestamp >= date &&
+            instance.process.timestamp < date + oneDay
+        )
     );
   }
+
   return nftsByDate;
 });
 

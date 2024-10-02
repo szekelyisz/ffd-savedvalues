@@ -32,7 +32,7 @@ import { computed } from 'vue';
 const allBrands = computed(() => [
   { label: 'All brands', value: null },
   ...Array.from(
-    new Set(useNftStore().nfts.map((nft) => nft.instance.ownerId))
+    new Set(useNftStore().allTokens.map((nft) => nft.instance.ownerId))
   ).map((brandName) => ({ label: brandName, value: brandName })),
 ]);
 
@@ -40,7 +40,7 @@ const allFacilityOptions = computed(() => [
   { label: 'All facilities', value: null },
 
   ...useNftStore()
-    .nfts.flatMap((nft) =>
+    .allTokens.flatMap((nft) =>
       'process' in nft.instance && nft.instance.process
         ? [nft.instance.process.facility]
         : []
